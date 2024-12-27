@@ -1,0 +1,139 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %} Audo Form {% endblock %}
+
+{% block link %}
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        button[type="submit"] {
+            background: #6e8efb;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #5b76cc;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        thead {
+            background: #6e8efb;
+            color: #fff;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #f9f9f9;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f1f1f1;
+        }
+
+        tbody tr:hover {
+            background: #eaeaea;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            table {
+                font-size: 14px;
+            }
+
+            textarea {
+                font-size: 14px;
+            }
+
+            button[type="submit"] {
+                font-size: 16px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>اطلاعات خود را وارد کنید</h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.text }}
+        <button type="submit">ارسال</button>
+    </form>
+
+    {% if key_info %}
+        <h2 style="text-align: center; margin-top: 30px;">نتیجه پردازش:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>پارامتر</th>
+                    <th>مقدار</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in key_info.items %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

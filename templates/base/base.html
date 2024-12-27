@@ -1,0 +1,17 @@
+{% load static %}
+{% load render_partial %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    {% block link %}{% endblock %}
+</head>
+<body>
+{% render_partial 'ai.views.header' %}
+{% block body %}
+
+{% endblock %}
+{% render_partial 'ai.views.footer' %}
+</body>
+</html>

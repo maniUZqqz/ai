@@ -1,0 +1,294 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %} RAG Chat {% endblock %}
+
+{% block link %}
+<style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar, .file-manager {
+      width: 25%;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      overflow-y: auto;
+    }
+    .sidebar, .file-manager {
+      padding: 20px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    h2 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+    ul {
+      list-style: none;
+      margin-top: 10px;
+    }
+    ul li {
+      padding: 10px;
+      background: #eaeaea;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    ul li:hover {
+      background: #d4d4d4;
+    }
+    .button {
+      display: inline-block;
+      margin: 10px 0;
+      padding: 10px 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background: #0056b3;
+    }
+    .input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      height: 50px;  
+    }
+    .chat-message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 60%;
+    }
+    .user-message {
+      background: #d1ecf1;
+      margin-left: auto;
+    }
+    .ai-message {
+      background: #eaeaea;
+      margin-right: auto;
+    }
+    .flex {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <!-- Sidebar for Chats -->
+  <div class="sidebar">
+    <h2>Your Chats</h2>
+    <button class="button" onclick="addChat()">New Chat</button>
+    <ul id="chat-list"></ul>
+  </div>
+
+  <!-- Main Content -->
+<div class="main-content">
+    <h2 id="active-chat-title">Chat</h2>
+    <div id="chat-area" style="flex-grow: 1; overflow-y: auto;"></div>
+
+    <!-- فرم ارسال پیام -->
+    <div class="flex">
+        <input
+            type="text"
+            id="chat-input"
+            placeholder="Type your message..."
+            class="input"
+        />
+        <button class="button" onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+  <!-- File Manager -->
+  <div class="file-manager">
+    <h2>File Manager</h2>
+    <input
+      type="file"
+      multiple
+      onchange="handleFileUpload(event)"
+      class="input"
+    />
+    <button class="button" onclick="useAllResources()">Use All Resources</button>
+    <div class="flex">
+        <input
+            type="text"
+            id="url-input"
+            placeholder="Paste your link here..."
+            class="input"
+        />
+        <button class="button" onclick="sendURL()">Upload Link</button>
+    </div>
+    <ul id="file-list"></ul>
+  </div>
+
+
+      <script>
+    // Chats
+    const chatList = document.getElementById("chat-list");
+    const activeChatTitle = document.getElementById("active-chat-title");
+    const chatArea = document.getElementById("chat-area");
+    let chats = ["Chat 1", "Chat 2"];
+    let activeChat = 0;
+    let chatMessages = [[], []]; // Stores messages for each chat.
+
+    function renderChats() {
+      chatList.innerHTML = "";
+      chats.forEach((chat, index) => {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = chat;
+        li.appendChild(span);
+
+        const buttons = document.createElement("div");
+        buttons.style.display = "flex";
+        buttons.style.gap = "5px";
+
+        const editButton = document.createElement("button");
+        editButton.textContent = "✏️";
+        editButton.onclick = () => {
+          const newName = prompt("Edit chat name:", chat);
+          if (newName) {
+            chats[index] = newName;
+            renderChats();
+          }
+        };
+        buttons.appendChild(editButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "🗑️";
+        deleteButton.onclick = () => {
+          chats.splice(index, 1);
+          chatMessages.splice(index, 1);
+          activeChat = Math.max(0, activeChat - 1);
+          renderChats();
+          renderMessages();
+        };
+        buttons.appendChild(deleteButton);
+
+        li.appendChild(buttons);
+        li.onclick = () => {
+          activeChat = index;
+          renderMessages();
+        };
+        chatList.appendChild(li);
+      });
+    }
+
+    function addChat() {
+      const newChat = `Chat ${chats.length + 1}`;
+      chats.push(newChat);
+      chatMessages.push([]);
+      renderChats();
+    }
+
+    function renderMessages() {
+      chatArea.innerHTML = "";
+      activeChatTitle.textContent = chats[activeChat];
+      chatMessages[activeChat].forEach((msg) => {
+        const div = document.createElement("div");
+        div.textContent = msg.text;
+        div.className = `chat-message ${
+          msg.sender === "user" ? "user-message" : "ai-message"
+        }`;
+        chatArea.appendChild(div);
+      });
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("chat-input");
+      const message = input.value;
+      if (message) {
+        chatMessages[activeChat].push({ sender: "user", text: message });
+        chatMessages[activeChat].push({
+          sender: "ai",
+          text: "AI: " + message,
+        });
+        input.value = "";
+        renderMessages();
+      }
+    }
+
+    // Files
+    const fileList = document.getElementById("file-list");
+    let files = [];
+
+    function handleFileUpload(event) {
+      const uploadedFiles = Array.from(event.target.files);
+      files.push(...uploadedFiles);
+      renderFiles();
+    }
+
+    function renderFiles() {
+      fileList.innerHTML = "";
+      files.forEach((file, index) => {
+        const li = document.createElement("li");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = index;
+
+        const span = document.createElement("span");
+        span.textContent = file.name;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "🗑️";
+        deleteButton.onclick = () => {
+          files.splice(index, 1);
+          renderFiles();
+        };
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(deleteButton);
+        fileList.appendChild(li);
+      });
+    }
+
+    function useAllResources() {
+      alert("Using all uploaded resources.");
+    }
+
+    // Initial Render
+    renderChats();
+    renderMessages();
+  </script>
+    
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

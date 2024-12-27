@@ -1,0 +1,150 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %} Chat Bot {% endblock %}
+
+{% block link %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f9fc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #chat-container {
+        display: flex;
+        width: 90%;
+        max-width: 1200px;
+        margin: 20px auto;
+        gap: 20px;
+    }
+
+    #chat-menu, #chat-box {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    #chat-menu {
+        flex: 0 0 250px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    #chat-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+        overflow-y: auto;
+    }
+
+    #chat-box h2 {
+        margin: 0;
+        color: #00796b;
+    }
+
+    .message {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 6px;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .message.user {
+        background-color: #e3f2fd;
+        align-self: flex-start;
+    }
+
+    .message.assistant {
+        background-color: #c8e6c9;
+        align-self: flex-end;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    textarea, input[type="url"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+        resize: none;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 10px 15px;
+        border: none;
+        background: #00796b;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-top: 10px;
+        transition: background 0.3s;
+    }
+
+    button:hover {
+        background: #004d40;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div id="chat-container">
+
+    <div id="chat-box">
+        {% if active_chat %}
+            <h2>{{ active_chat.title }}</h2>
+            <div class="message user">{{ active_chat.user_question }}</div>
+            <div class="message assistant">{{ active_chat.assistant_answer }}</div>
+        {% else %}
+            <h2>No Active Chat</h2>
+        {% endif %}
+    </div>
+</div>
+
+<textarea id="user-input" placeholder="Type your message..."></textarea>
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    function sendMessage() {
+        const userInput = document.getElementById("user-input").value;
+        const urlInput = document.getElementById("url-input").value;
+
+        if (!userInput.trim() && !urlInput.trim()) return;
+
+        const formData = new FormData();
+        formData.append("message", userInput);
+        formData.append("url", urlInput);
+
+        fetch("", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.answer) {
+                  const chatBox = document.getElementById("chat-box");
+                  chatBox.innerHTML += `<div class="message user">${userInput}</div>`;
+                  chatBox.innerHTML += `<div class="message assistant">${data.answer}</div>`;
+              }
+          }).catch(error => console.error("Error:", error));
+    }
+</script>
+{% endblock %}
