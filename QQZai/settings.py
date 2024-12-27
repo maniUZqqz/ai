@@ -29,8 +29,9 @@ SECRET_KEY = 'django-insecure-_kwfoy(#+$&@0kzuj0&_ofgj*fmahsok3#shj^blimef^1=e!+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['192.168.139.11', 'localhost', '127.0.0.1']
+# daphne -b 0.0.0.0 -p 8080 QQZai.asgi:application
 
 # Application definition
 
