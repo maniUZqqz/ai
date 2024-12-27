@@ -180,4 +180,3 @@ whitenoise==6.8.2
 wrapt==1.16.0
 yarl==1.17.1
 zope.interface==7.2
-pinecone==5.4.2

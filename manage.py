@@ -20,3 +20,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# pinecone==5.4.2
